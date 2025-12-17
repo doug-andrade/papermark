@@ -71,19 +71,24 @@ export const getTeamDocuments = query({
     limit: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    let query = ctx.db
-      .query("documents")
-      .withIndex("by_team_folder", (q) => {
-        if (args.folderId) {
-          return q.eq("teamId", args.teamId).eq("folderId", args.folderId);
-        }
-        return q.eq("teamId", args.teamId);
-      });
+    // Use appropriate index based on whether folderId is provided
+    let documentsQuery;
+    if (args.folderId) {
+      documentsQuery = ctx.db
+        .query("documents")
+        .withIndex("by_team_folder", (q) =>
+          q.eq("teamId", args.teamId).eq("folderId", args.folderId)
+        );
+    } else {
+      documentsQuery = ctx.db
+        .query("documents")
+        .withIndex("by_team", (q) => q.eq("teamId", args.teamId));
+    }
 
     if (args.limit) {
-      return await query.take(args.limit);
+      return await documentsQuery.take(args.limit);
     }
-    return await query.collect();
+    return await documentsQuery.collect();
   },
 });
 

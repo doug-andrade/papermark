@@ -398,6 +398,10 @@ export const getUpcomingInvoice = action({
 
     if (args.priceId && args.subscriptionId) {
       const subscription = await stripe.subscriptions.retrieve(args.subscriptionId);
+      // Validate subscription has at least one item before accessing
+      if (!subscription.items?.data?.length) {
+        throw new Error("Subscription has no items to preview update");
+      }
       params.subscription_items = [
         {
           id: subscription.items.data[0].id,

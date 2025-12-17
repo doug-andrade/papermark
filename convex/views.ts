@@ -361,7 +361,8 @@ export const getViewersByDataroom = query({
 
 // ==================== VIEWER MUTATIONS ====================
 
-export const createViewer = mutation({
+// Returns existing viewer ID if found, otherwise creates a new viewer
+export const getOrCreateViewer = mutation({
   args: {
     email: v.string(),
     teamId: v.id("teams"),

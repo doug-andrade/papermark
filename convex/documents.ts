@@ -54,12 +54,14 @@ export const searchByName = query({
   },
   handler: async (ctx, args) => {
     // Convex doesn't have LIKE queries, so we filter in memory
-    // Limit results to prevent excessive memory usage
+    // Limit initial fetch to prevent excessive memory usage for large teams
     const maxResults = args.limit ?? 100;
+    const maxInitialFetch = 1000; // Cap initial fetch to avoid loading entire database
+
     const documents = await ctx.db
       .query("documents")
       .withIndex("by_team", (q) => q.eq("teamId", args.teamId))
-      .collect();
+      .take(maxInitialFetch);
 
     const filtered = documents.filter((doc) =>
       doc.name.toLowerCase().includes(args.name.toLowerCase())
@@ -471,25 +473,35 @@ export const updateFolder = mutation({
 export const deleteFolder = mutation({
   args: { id: v.id("folders") },
   handler: async (ctx, args) => {
-    // Update documents to have null folderId
-    const documents = await ctx.db
-      .query("documents")
-      .withIndex("by_folder", (q) => q.eq("folderId", args.id))
-      .collect();
-    await Promise.all(
-      documents.map((d) => ctx.db.patch(d._id, { folderId: undefined }))
-    );
+    // Use iterative approach to avoid stack overflow with deep folder hierarchies
+    const foldersToDelete: Array<typeof args.id> = [args.id];
+    const processedFolders: Array<typeof args.id> = [];
 
-    // Delete child folders recursively
-    const childFolders = await ctx.db
-      .query("folders")
-      .withIndex("by_parent", (q) => q.eq("parentId", args.id))
-      .collect();
-    for (const child of childFolders) {
-      await ctx.runMutation(ctx.api?.documents?.deleteFolder, { id: child._id });
+    // Collect all folders to delete (breadth-first)
+    while (foldersToDelete.length > 0) {
+      const currentFolderId = foldersToDelete.shift()!;
+      processedFolders.push(currentFolderId);
+
+      const childFolders = await ctx.db
+        .query("folders")
+        .withIndex("by_parent", (q) => q.eq("parentId", currentFolderId))
+        .collect();
+      foldersToDelete.push(...childFolders.map((f) => f._id));
     }
 
-    await ctx.db.delete(args.id);
+    // Update documents and delete folders (process in reverse to delete children first)
+    for (const folderId of processedFolders.reverse()) {
+      // Update documents to have null folderId
+      const documents = await ctx.db
+        .query("documents")
+        .withIndex("by_folder", (q) => q.eq("folderId", folderId))
+        .collect();
+      await Promise.all(
+        documents.map((d) => ctx.db.patch(d._id, { folderId: undefined }))
+      );
+
+      await ctx.db.delete(folderId);
+    }
   },
 });
 

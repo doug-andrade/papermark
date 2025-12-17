@@ -513,7 +513,7 @@ export const getSentEmailsByTeam = query({
 
 export const createYearInReview = mutation({
   args: {
-    teamId: v.string(),
+    teamId: v.id("teams"),
     stats: v.any(),
     status: v.optional(v.string()),
   },
@@ -542,7 +542,7 @@ export const updateYearInReview = mutation({
   handler: async (ctx, args) => {
     const { id, ...updates } = args;
     const filteredUpdates = Object.fromEntries(
-      Object.entries(updates).filter(([_, v]) => v !== undefined)
+      Object.entries(updates).filter(([_, val]) => val !== undefined)
     );
     await ctx.db.patch(id, { ...filteredUpdates, updatedAt: Date.now() });
     return await ctx.db.get(id);
@@ -550,7 +550,7 @@ export const updateYearInReview = mutation({
 });
 
 export const getYearInReviewByTeam = query({
-  args: { teamId: v.string() },
+  args: { teamId: v.id("teams") },
   handler: async (ctx, args) => {
     return await ctx.db
       .query("yearInReviews")
