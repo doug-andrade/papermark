@@ -248,32 +248,26 @@ export const remove = mutation({
       .collect();
     await Promise.all(reactions.map((r) => ctx.db.delete(r._id)));
 
-    // Delete custom field response
-    const customFieldResponse = await ctx.db
+    // Delete custom field responses (use collect for safety in case of duplicates)
+    const customFieldResponses = await ctx.db
       .query("customFieldResponses")
       .withIndex("by_view", (q) => q.eq("viewId", args.id))
-      .unique();
-    if (customFieldResponse) {
-      await ctx.db.delete(customFieldResponse._id);
-    }
+      .collect();
+    await Promise.all(customFieldResponses.map((r) => ctx.db.delete(r._id)));
 
-    // Delete feedback response
-    const feedbackResponse = await ctx.db
+    // Delete feedback responses
+    const feedbackResponses = await ctx.db
       .query("feedbackResponses")
       .withIndex("by_view", (q) => q.eq("viewId", args.id))
-      .unique();
-    if (feedbackResponse) {
-      await ctx.db.delete(feedbackResponse._id);
-    }
+      .collect();
+    await Promise.all(feedbackResponses.map((r) => ctx.db.delete(r._id)));
 
-    // Delete agreement response
-    const agreementResponse = await ctx.db
+    // Delete agreement responses
+    const agreementResponses = await ctx.db
       .query("agreementResponses")
       .withIndex("by_view", (q) => q.eq("viewId", args.id))
-      .unique();
-    if (agreementResponse) {
-      await ctx.db.delete(agreementResponse._id);
-    }
+      .collect();
+    await Promise.all(agreementResponses.map((r) => ctx.db.delete(r._id)));
 
     // Delete view
     await ctx.db.delete(args.id);

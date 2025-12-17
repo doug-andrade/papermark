@@ -50,17 +50,22 @@ export const searchByName = query({
   args: {
     teamId: v.id("teams"),
     name: v.string(),
+    limit: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     // Convex doesn't have LIKE queries, so we filter in memory
+    // Limit results to prevent excessive memory usage
+    const maxResults = args.limit ?? 100;
     const documents = await ctx.db
       .query("documents")
       .withIndex("by_team", (q) => q.eq("teamId", args.teamId))
       .collect();
 
-    return documents.filter((doc) =>
+    const filtered = documents.filter((doc) =>
       doc.name.toLowerCase().includes(args.name.toLowerCase())
     );
+
+    return filtered.slice(0, maxResults);
   },
 });
 

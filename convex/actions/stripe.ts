@@ -298,6 +298,10 @@ export const updateSubscription = action({
     const updateParams: Stripe.SubscriptionUpdateParams = {};
 
     if (args.priceId) {
+      // Validate subscription has at least one item before accessing
+      if (!subscription.items?.data?.length) {
+        throw new Error("Subscription has no items to update");
+      }
       updateParams.items = [
         {
           id: subscription.items.data[0].id,

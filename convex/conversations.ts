@@ -387,11 +387,14 @@ export const getFaqItemsByDataroom = query({
 export const getPublishedFaqItems = query({
   args: { dataroomId: v.id("datarooms") },
   handler: async (ctx, args) => {
-    return await ctx.db
+    // Query by dataroom first (more selective), then filter by status
+    // This is more efficient than querying by status globally
+    const items = await ctx.db
       .query("dataroomFaqItems")
-      .withIndex("by_status", (q) => q.eq("status", "PUBLISHED"))
-      .filter((q) => q.eq(q.field("dataroomId"), args.dataroomId))
+      .withIndex("by_dataroom", (q) => q.eq("dataroomId", args.dataroomId))
       .collect();
+
+    return items.filter((item) => item.status === "PUBLISHED");
   },
 });
 
