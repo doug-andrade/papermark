@@ -17,7 +17,12 @@
     "trigger:v3:deploy": "npx trigger.dev@3 deploy",
     "stripe:webhook": "pkgx stripe listen --forward-to localhost:3000/api/stripe/webhook",
     "format": "prettier --write \"**/*.{js,jsx,ts,tsx,mdx}\"",
-    "dev:prisma": "npx prisma generate && npx prisma migrate deploy"
+    "dev:prisma": "npx prisma generate && npx prisma migrate deploy",
+    "convex:dev": "npx convex dev",
+    "convex:deploy": "npx convex deploy",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:convex": "vitest run --dir convex"
   },
   "dependencies": {
     "@ai-sdk/openai": "^2.0.86",
@@ -85,6 +90,7 @@
     "@vercel/blob": "^2.0.0",
     "@vercel/edge-config": "^1.4.3",
     "@vercel/functions": "^3.3.4",
+    "@vitejs/plugin-react": "^5.1.2",
     "ai": "^5.0.113",
     "autoprefixer": "^10.4.22",
     "base-x": "^5.0.1",
@@ -94,6 +100,8 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
+    "convex": "^1.31.1",
+    "convex-test": "^0.0.41",
     "date-fns": "^3.6.0",
     "dub": "^0.69.0",
     "embla-carousel-react": "^8.6.0",
@@ -158,7 +166,8 @@
     "use-debounce": "^10.0.6",
     "use-stick-to-bottom": "^1.1.1",
     "vaul": "^1.1.2",
-    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz",
+    "vitest": "^4.0.16",
+    "xlsx": "^0.18.5",
     "zod": "^3.25.76"
   },
   "devDependencies": {
