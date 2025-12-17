@@ -70,7 +70,17 @@ export default defineSchema({
     pauseStartsAt: v.optional(v.number()),
     pauseEndsAt: v.optional(v.number()),
     cancelledAt: v.optional(v.number()),
-    limits: v.optional(v.any()), // JSON object for plan limits
+    limits: v.optional(
+      v.object({
+        users: v.optional(v.number()),
+        documents: v.optional(v.number()),
+        datarooms: v.optional(v.number()),
+        links: v.optional(v.number()),
+        customDomains: v.optional(v.number()),
+        advancedLinkControls: v.optional(v.boolean()),
+        customBranding: v.optional(v.boolean()),
+      })
+    ), // Plan limits configuration
     enableExcelAdvancedMode: v.boolean(),
     replicateDataroomFolders: v.boolean(),
     agentsEnabled: v.boolean(),
@@ -231,7 +241,7 @@ export default defineSchema({
     name: v.optional(v.string()),
     slug: v.optional(v.string()),
     expiresAt: v.optional(v.number()),
-    password: v.optional(v.string()),
+    password: v.optional(v.string()), // IMPORTANT: Must be hashed (bcrypt) before storage
     allowList: v.array(v.string()),
     denyList: v.array(v.string()),
     emailProtected: v.boolean(),
@@ -922,12 +932,20 @@ export default defineSchema({
   // ==================== YEAR IN REVIEW ====================
 
   yearInReviews: defineTable({
-    teamId: v.string(),
+    teamId: v.id("teams"),
     status: v.string(), // "pending" | "processing" | "completed" | "failed"
     attempts: v.number(),
     lastAttempted: v.optional(v.number()),
     error: v.optional(v.string()),
-    stats: v.any(), // JSON
+    stats: v.optional(
+      v.object({
+        totalViews: v.optional(v.number()),
+        totalDocuments: v.optional(v.number()),
+        totalLinks: v.optional(v.number()),
+        topDocuments: v.optional(v.array(v.any())),
+        viewsByMonth: v.optional(v.array(v.any())),
+      })
+    ), // Year in review statistics
     createdAt: v.number(),
     updatedAt: v.number(),
   })

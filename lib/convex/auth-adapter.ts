@@ -45,7 +45,9 @@ export function ConvexAdapter(): Adapter {
           emailVerified: user.emailVerified ? new Date(user.emailVerified) : null,
           image: user.image ?? null,
         };
-      } catch {
+      } catch (error) {
+        // Log error for debugging - invalid ID format or network issues
+        console.error("[ConvexAdapter] getUser error:", error);
         return null;
       }
     },

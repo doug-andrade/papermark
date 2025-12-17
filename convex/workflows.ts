@@ -83,15 +83,15 @@ export const getWorkflowExecutions = query({
     limit: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    let query = ctx.db
+    const executionsQuery = ctx.db
       .query("workflowExecutions")
       .withIndex("by_workflow_started", (q) => q.eq("workflowId", args.workflowId))
       .order("desc");
 
     if (args.limit) {
-      return await query.take(args.limit);
+      return await executionsQuery.take(args.limit);
     }
-    return await query.collect();
+    return await executionsQuery.collect();
   },
 });
 
@@ -144,7 +144,7 @@ export const update = mutation({
   handler: async (ctx, args) => {
     const { id, ...updates } = args;
     const filteredUpdates = Object.fromEntries(
-      Object.entries(updates).filter(([_, v]) => v !== undefined)
+      Object.entries(updates).filter(([_, val]) => val !== undefined)
     );
     await ctx.db.patch(id, { ...filteredUpdates, updatedAt: Date.now() });
     return await ctx.db.get(id);
@@ -235,7 +235,7 @@ export const updateStep = mutation({
   handler: async (ctx, args) => {
     const { id, ...updates } = args;
     const filteredUpdates = Object.fromEntries(
-      Object.entries(updates).filter(([_, v]) => v !== undefined)
+      Object.entries(updates).filter(([_, val]) => val !== undefined)
     );
     await ctx.db.patch(id, { ...filteredUpdates, updatedAt: Date.now() });
     return await ctx.db.get(id);
@@ -288,7 +288,7 @@ export const updateExecution = mutation({
   handler: async (ctx, args) => {
     const { id, ...updates } = args;
     const filteredUpdates = Object.fromEntries(
-      Object.entries(updates).filter(([_, v]) => v !== undefined)
+      Object.entries(updates).filter(([_, val]) => val !== undefined)
     );
     await ctx.db.patch(id, filteredUpdates);
     return await ctx.db.get(id);

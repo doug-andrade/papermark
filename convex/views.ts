@@ -16,15 +16,15 @@ export const getByLink = query({
     limit: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    let query = ctx.db
+    const viewsQuery = ctx.db
       .query("views")
       .withIndex("by_link", (q) => q.eq("linkId", args.linkId))
       .order("desc");
 
     if (args.limit) {
-      return await query.take(args.limit);
+      return await viewsQuery.take(args.limit);
     }
-    return await query.collect();
+    return await viewsQuery.collect();
   },
 });
 
@@ -62,15 +62,15 @@ export const getByDataroom = query({
     limit: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    let query = ctx.db
+    const viewsQuery = ctx.db
       .query("views")
       .withIndex("by_dataroom", (q) => q.eq("dataroomId", args.dataroomId))
       .order("desc");
 
     if (args.limit) {
-      return await query.take(args.limit);
+      return await viewsQuery.take(args.limit);
     }
-    return await query.collect();
+    return await viewsQuery.collect();
   },
 });
 
@@ -80,15 +80,15 @@ export const getByViewer = query({
     limit: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    let query = ctx.db
+    const viewsQuery = ctx.db
       .query("views")
       .withIndex("by_viewer", (q) => q.eq("viewerId", args.viewerId))
       .order("desc");
 
     if (args.limit) {
-      return await query.take(args.limit);
+      return await viewsQuery.take(args.limit);
     }
-    return await query.collect();
+    return await viewsQuery.collect();
   },
 });
 
@@ -98,15 +98,15 @@ export const getByViewerEmail = query({
     limit: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    let query = ctx.db
+    const viewsQuery = ctx.db
       .query("views")
       .withIndex("by_viewer_email", (q) => q.eq("viewerEmail", args.viewerEmail))
       .order("desc");
 
     if (args.limit) {
-      return await query.take(args.limit);
+      return await viewsQuery.take(args.limit);
     }
-    return await query.collect();
+    return await viewsQuery.collect();
   },
 });
 
@@ -116,15 +116,15 @@ export const getByTeam = query({
     limit: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    let query = ctx.db
+    const viewsQuery = ctx.db
       .query("views")
       .withIndex("by_team", (q) => q.eq("teamId", args.teamId))
       .order("desc");
 
     if (args.limit) {
-      return await query.take(args.limit);
+      return await viewsQuery.take(args.limit);
     }
-    return await query.collect();
+    return await viewsQuery.collect();
   },
 });
 
@@ -215,7 +215,7 @@ export const update = mutation({
   handler: async (ctx, args) => {
     const { id, ...updates } = args;
     const filteredUpdates = Object.fromEntries(
-      Object.entries(updates).filter(([_, v]) => v !== undefined)
+      Object.entries(updates).filter(([_, val]) => val !== undefined)
     );
     await ctx.db.patch(id, filteredUpdates);
     return await ctx.db.get(id);
@@ -415,7 +415,7 @@ export const updateViewer = mutation({
   handler: async (ctx, args) => {
     const { id, ...updates } = args;
     const filteredUpdates = Object.fromEntries(
-      Object.entries(updates).filter(([_, v]) => v !== undefined)
+      Object.entries(updates).filter(([_, val]) => val !== undefined)
     );
     await ctx.db.patch(id, { ...filteredUpdates, updatedAt: Date.now() });
     return await ctx.db.get(id);
@@ -552,7 +552,7 @@ export const updateAgreement = mutation({
   handler: async (ctx, args) => {
     const { id, ...updates } = args;
     const filteredUpdates = Object.fromEntries(
-      Object.entries(updates).filter(([_, v]) => v !== undefined)
+      Object.entries(updates).filter(([_, val]) => val !== undefined)
     );
     await ctx.db.patch(id, { ...filteredUpdates, updatedAt: Date.now() });
     return await ctx.db.get(id);

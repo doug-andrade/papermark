@@ -62,6 +62,7 @@ export const sendEmail = action({
       from: fromAddress,
       to: toAddress,
       cc: args.cc,
+      // Marketing emails always use marc@papermark.io as replyTo for consistency
       replyTo: args.emailType === "marketing" ? "marc@papermark.io" : args.replyTo,
       subject: args.subject,
       html: args.html,
@@ -96,14 +97,16 @@ export const sendBatchEmails = action({
     const resend = getResendClient();
     const fromAddress = getSenderAddress(args.emailType || "default");
 
-    const batchEmails = args.emails.map((email) => ({
+    const timestamp = Date.now();
+    const batchEmails = args.emails.map((email, index) => ({
       from: email.from || fromAddress,
       to: email.to,
       subject: email.subject,
       html: email.html,
       text: email.text,
       headers: {
-        "X-Entity-Ref-ID": `${Date.now()}-${Math.random().toString(36).substring(2, 15)}`,
+        // Include index to ensure unique ID for each email in the batch
+        "X-Entity-Ref-ID": `${timestamp}-${index}-${Math.random().toString(36).substring(2, 15)}`,
       },
     }));
 

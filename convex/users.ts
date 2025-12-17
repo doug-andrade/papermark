@@ -32,9 +32,25 @@ export const getByStripeId = query({
 });
 
 export const list = query({
-  args: {},
-  handler: async (ctx) => {
-    return await ctx.db.query("users").collect();
+  args: {
+    limit: v.optional(v.number()),
+    cursor: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const limit = args.limit ?? 100; // Default limit to prevent unbounded queries
+    let query = ctx.db.query("users");
+
+    // Apply pagination
+    const results = await query.take(limit + 1);
+
+    const hasMore = results.length > limit;
+    const users = hasMore ? results.slice(0, limit) : results;
+
+    return {
+      users,
+      hasMore,
+      nextCursor: hasMore ? users[users.length - 1]?._id : undefined,
+    };
   },
 });
 

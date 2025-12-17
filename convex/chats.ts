@@ -16,15 +16,15 @@ export const getByTeam = query({
     limit: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    let query = ctx.db
+    const chatsQuery = ctx.db
       .query("chats")
       .withIndex("by_team", (q) => q.eq("teamId", args.teamId))
       .order("desc");
 
     if (args.limit) {
-      return await query.take(args.limit);
+      return await chatsQuery.take(args.limit);
     }
-    return await query.collect();
+    return await chatsQuery.collect();
   },
 });
 
@@ -54,15 +54,15 @@ export const getByUser = query({
     limit: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    let query = ctx.db
+    const chatsQuery = ctx.db
       .query("chats")
       .withIndex("by_user", (q) => q.eq("userId", args.userId))
       .order("desc");
 
     if (args.limit) {
-      return await query.take(args.limit);
+      return await chatsQuery.take(args.limit);
     }
-    return await query.collect();
+    return await chatsQuery.collect();
   },
 });
 
@@ -72,15 +72,15 @@ export const getByViewer = query({
     limit: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    let query = ctx.db
+    const chatsQuery = ctx.db
       .query("chats")
       .withIndex("by_viewer", (q) => q.eq("viewerId", args.viewerId))
       .order("desc");
 
     if (args.limit) {
-      return await query.take(args.limit);
+      return await chatsQuery.take(args.limit);
     }
-    return await query.collect();
+    return await chatsQuery.collect();
   },
 });
 

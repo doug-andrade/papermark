@@ -131,13 +131,16 @@ export const deleteFiles = action({
       })
     );
 
-    const deleted = results
-      .filter((r) => r.status === "fulfilled")
-      .map((r) => (r as PromiseFulfilledResult<string>).value);
+    const deleted: string[] = [];
+    const failed: string[] = [];
 
-    const failed = results
-      .filter((r) => r.status === "rejected")
-      .map((_, i) => args.keys[i]);
+    results.forEach((result, index) => {
+      if (result.status === "fulfilled") {
+        deleted.push(result.value);
+      } else {
+        failed.push(args.keys[index]);
+      }
+    });
 
     return { deleted, failed };
   },
@@ -155,10 +158,12 @@ export const copyFile = action({
     const bucket = getBucket();
     const sourceBucket = args.sourceBucket || bucket;
 
+    // URL-encode the source key to handle special characters
+    const encodedSourceKey = encodeURIComponent(args.sourceKey);
     const command = new CopyObjectCommand({
       Bucket: bucket,
       Key: args.destinationKey,
-      CopySource: `${sourceBucket}/${args.sourceKey}`,
+      CopySource: `${sourceBucket}/${encodedSourceKey}`,
     });
 
     await client.send(command);

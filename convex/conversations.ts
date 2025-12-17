@@ -83,15 +83,15 @@ export const getConversationMessages = query({
     limit: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    let query = ctx.db
+    const messagesQuery = ctx.db
       .query("messages")
       .withIndex("by_conversation", (q) => q.eq("conversationId", args.conversationId))
       .order("asc");
 
     if (args.limit) {
-      return await query.take(args.limit);
+      return await messagesQuery.take(args.limit);
     }
-    return await query.collect();
+    return await messagesQuery.collect();
   },
 });
 
@@ -169,7 +169,7 @@ export const update = mutation({
   handler: async (ctx, args) => {
     const { id, ...updates } = args;
     const filteredUpdates = Object.fromEntries(
-      Object.entries(updates).filter(([_, v]) => v !== undefined)
+      Object.entries(updates).filter(([_, val]) => val !== undefined)
     );
     await ctx.db.patch(id, { ...filteredUpdates, updatedAt: Date.now() });
     return await ctx.db.get(id);
@@ -323,7 +323,7 @@ export const updateParticipant = mutation({
   handler: async (ctx, args) => {
     const { id, ...updates } = args;
     const filteredUpdates = Object.fromEntries(
-      Object.entries(updates).filter(([_, v]) => v !== undefined)
+      Object.entries(updates).filter(([_, val]) => val !== undefined)
     );
     await ctx.db.patch(id, filteredUpdates);
     return await ctx.db.get(id);
@@ -463,7 +463,7 @@ export const updateFaqItem = mutation({
   handler: async (ctx, args) => {
     const { id, ...updates } = args;
     const filteredUpdates = Object.fromEntries(
-      Object.entries(updates).filter(([_, v]) => v !== undefined)
+      Object.entries(updates).filter(([_, val]) => val !== undefined)
     );
     await ctx.db.patch(id, { ...filteredUpdates, updatedAt: Date.now() });
     return await ctx.db.get(id);
@@ -473,9 +473,13 @@ export const updateFaqItem = mutation({
 export const incrementFaqViewCount = mutation({
   args: { id: v.id("dataroomFaqItems") },
   handler: async (ctx, args) => {
+    // Convex mutations are automatically serialized with OCC (Optimistic Concurrency Control).
+    // If concurrent calls try to update the same document, Convex will retry failed transactions.
     const faqItem = await ctx.db.get(args.id);
     if (faqItem) {
-      await ctx.db.patch(args.id, { viewCount: faqItem.viewCount + 1 });
+      // Use nullish coalescing to handle undefined viewCount gracefully
+      const currentCount = faqItem.viewCount ?? 0;
+      await ctx.db.patch(args.id, { viewCount: currentCount + 1 });
     }
     return await ctx.db.get(args.id);
   },
